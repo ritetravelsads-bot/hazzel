@@ -16,14 +16,30 @@ import mongoose from "mongoose"
 
 async function getSession() {
   const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get("session")
-  if (!sessionCookie) return null
-
-  try {
-    return JSON.parse(sessionCookie.value)
-  } catch {
-    return null
+  
+  // Check for team session first
+  const teamSessionCookie = cookieStore.get("team-session")
+  if (teamSessionCookie) {
+    try {
+      const session = JSON.parse(teamSessionCookie.value)
+      return { ...session, type: "team" }
+    } catch {
+      // Continue to check customer session
+    }
   }
+  
+  // Check for customer session
+  const customerSessionCookie = cookieStore.get("customer-session")
+  if (customerSessionCookie) {
+    try {
+      const session = JSON.parse(customerSessionCookie.value)
+      return { ...session, type: "customer" }
+    } catch {
+      return null
+    }
+  }
+  
+  return null
 }
 
 // GET - List invoices
