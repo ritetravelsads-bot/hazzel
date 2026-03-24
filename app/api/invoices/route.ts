@@ -162,10 +162,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invoice request is not approved" }, { status: 400 })
     }
 
-    // Upload file to Blob
-    const blob = await put(`invoices/${invoiceRequestId}/${file.name}`, file, {
-      access: "private",
-    })
+    // Upload file to Blob (store is configured as private)
+    const blob = await put(`invoices/${invoiceRequestId}/${file.name}`, file, {})
 
     // Generate invoice number
     const sequence = await getNextSequence("invoice")

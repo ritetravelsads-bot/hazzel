@@ -61,9 +61,7 @@ export async function POST(request: NextRequest) {
     const folder = uploadType === 'invoice' ? 'invoices' : 'ticket-attachments'
     const filename = `${folder}/${timestamp}-${file.name}`
 
-    const blob = await put(filename, file, {
-      access: 'public',
-    })
+    const blob = await put(filename, file, {})
 
     return NextResponse.json({ url: blob.url })
   } catch (error) {
