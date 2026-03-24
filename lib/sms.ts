@@ -4,7 +4,7 @@ import SMSLog from "@/models/SMSLog"
 interface SendSMSParams {
   to: string
   message: string
-  type: "ticket_created" | "ticket_approved" | "ticket_rejected" | "user_created" | "general"
+  type: "ticket_created" | "ticket_approved" | "ticket_rejected" | "user_created" | "invoice_uploaded" | "invoice_approved" | "general"
   relatedId?: string
 }
 
