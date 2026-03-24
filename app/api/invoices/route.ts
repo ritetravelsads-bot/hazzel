@@ -108,9 +108,7 @@ export async function GET(request: Request) {
 // POST - Upload invoice (accountant only)
 export async function POST(request: Request) {
   try {
-    console.log("[v0] Invoice POST started")
     const session = await getSession()
-    console.log("[v0] Session:", session)
     if (!session || session.type !== "team") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -119,7 +117,6 @@ export async function POST(request: Request) {
 
     // Verify user is accountant or account
     const user = await User.findById(session.userId)
-    console.log("[v0] User found:", user?.role)
     if (!user || (user.role !== ROLES.ACCOUNTANT && user.role !== ROLES.ACCOUNT)) {
       return NextResponse.json({ error: "Only accountants or account users can upload invoices" }, { status: 403 })
     }
@@ -129,8 +126,6 @@ export async function POST(request: Request) {
     const invoiceRequestId = formData.get("invoice_request_id") as string
     const visibilityStart = formData.get("visibility_start") as string
     const visibilityEnd = formData.get("visibility_end") as string
-
-    console.log("[v0] FormData:", { file: file?.name, invoiceRequestId, visibilityStart, visibilityEnd })
 
     if (!file || !invoiceRequestId || !visibilityStart || !visibilityEnd) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -158,9 +153,7 @@ export async function POST(request: Request) {
     }
 
     // Verify invoice request exists and is approved
-    console.log("[v0] Finding invoice request:", invoiceRequestId)
     const invoiceRequest = await InvoiceRequest.findById(invoiceRequestId).populate("customer_id")
-    console.log("[v0] Invoice request found:", invoiceRequest?._id, "status:", invoiceRequest?.status)
     if (!invoiceRequest) {
       return NextResponse.json({ error: "Invoice request not found" }, { status: 404 })
     }
@@ -170,11 +163,9 @@ export async function POST(request: Request) {
     }
 
     // Upload file to Blob
-    console.log("[v0] Uploading file to blob...")
     const blob = await put(`invoices/${invoiceRequestId}/${file.name}`, file, {
-      access: "public",
+      access: "private",
     })
-    console.log("[v0] Blob uploaded:", blob.url)
 
     // Generate invoice number
     const sequence = await getNextSequence("invoice")
