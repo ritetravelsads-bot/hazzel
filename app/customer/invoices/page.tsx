@@ -27,10 +27,10 @@ import { format, differenceInDays, differenceInHours } from "date-fns"
 interface InvoiceRequest {
   id: string
   request_number: string
-  date_from: string
-  date_to: string
+  date_range_start: string
+  date_range_end: string
   status: string
-  notes?: string
+  description?: string
   created_at: string
   approved_at?: string
   rejected_at?: string
@@ -338,11 +338,11 @@ export default function CustomerInvoicesPage() {
                           <div>
                             <p className="font-medium">{request.request_number}</p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(request.date_from), "MMM d, yyyy")} -{" "}
-                              {format(new Date(request.date_to), "MMM d, yyyy")}
+                              {format(new Date(request.date_range_start), "MMM d, yyyy")} -{" "}
+                              {format(new Date(request.date_range_end), "MMM d, yyyy")}
                             </p>
-                            {request.notes && (
-                              <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
+                            {request.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{request.description}</p>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
