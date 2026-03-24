@@ -13,11 +13,12 @@ import { CUSTOMER_ROLES, ROLES } from "@/lib/constants"
 
 async function getSession() {
   const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get("session")
-  if (!sessionCookie) return null
+  const customerSession = cookieStore.get("customer-session")
+  if (!customerSession) return null
 
   try {
-    return JSON.parse(sessionCookie.value)
+    const session = JSON.parse(customerSession.value)
+    return { ...session, type: "customer" }
   } catch {
     return null
   }
@@ -67,9 +68,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       invoiceRequest.approved_at = new Date()
       await invoiceRequest.save()
 
-      // Find and notify all accountants
+      // Find and notify all accountants and account users
       const accountants = await User.find({
-        role: ROLES.ACCOUNTANT,
+        role: { $in: [ROLES.ACCOUNTANT, ROLES.ACCOUNT] },
         is_active: true,
       })
 

@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       admin: 3,
       manager: 2,
       agent: 1,
+      account: 1,
     }
 
     // Check if trying to create a role higher than or equal to their own
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     // Additional validation
-    if (![ROLES.AGENT, ROLES.MANAGER, ROLES.ADMIN, ROLES.SUPER_ADMIN].includes(role)) {
+    if (![ROLES.AGENT, ROLES.MANAGER, ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.ACCOUNT].includes(role)) {
       return NextResponse.json({ message: "Invalid role" }, { status: 400 })
     }
 

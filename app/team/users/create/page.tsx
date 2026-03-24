@@ -226,6 +226,9 @@ export default function CreateUserPage() {
                             <SelectItem value="manager">Manager</SelectItem>
                           )}
                           <SelectItem value="agent">Agent</SelectItem>
+                          {["super_admin", "admin"].includes(user.role) && (
+                            <SelectItem value="account">Account</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>

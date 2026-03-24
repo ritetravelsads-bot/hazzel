@@ -61,7 +61,7 @@ export default function CustomerInvoicesPage() {
     description: "",
   })
 
-  const isAdmin = customer?.role === "customer_user_admin"
+  const isAdmin = customer?.role === "customer_admin"
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,7 +168,7 @@ export default function CustomerInvoicesPage() {
       const response = await fetch(`/api/invoice-requests/${requestId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reject", rejection_reason: reason }),
+        body: JSON.stringify({ action: "reject", rejected_reason: reason }),
       })
 
       if (response.ok) {

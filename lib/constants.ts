@@ -4,6 +4,7 @@ export const ROLES = {
   MANAGER: "manager",
   AGENT: "agent",
   ACCOUNTANT: "accountant",
+  ACCOUNT: "account",
 } as const
 
 export const INVOICE_REQUEST_STATUS = {

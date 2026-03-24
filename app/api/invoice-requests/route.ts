@@ -67,8 +67,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "User not found" }, { status: 404 })
       }
 
-      // Accountants can only see approved requests
-      if (user.role === ROLES.ACCOUNTANT) {
+      // Accountants and Account users can only see approved requests
+      if (user.role === ROLES.ACCOUNTANT || user.role === ROLES.ACCOUNT) {
         query.status = { $in: ["approved", "uploaded"] }
       }
 
@@ -165,11 +165,14 @@ export async function POST(request: Request) {
     })
 
     if (isAdmin) {
-      // Auto-approved - notify accountants directly
+      // Auto-approved - notify accountants and account users directly
       const { sendSMS, sendWhatsApp, formatInvoiceRequestApprovedSMS } = await import("@/lib/sms")
       
       const customer = await Customer.findById(session.customerId)
-      const accountants = await User.find({ role: ROLES.ACCOUNTANT, is_active: true })
+      const accountants = await User.find({ 
+        role: { $in: [ROLES.ACCOUNTANT, ROLES.ACCOUNT] }, 
+        is_active: true 
+      })
 
       const dateFrom = new Date(date_range_start).toLocaleDateString()
       const dateTo = new Date(date_range_end).toLocaleDateString()
