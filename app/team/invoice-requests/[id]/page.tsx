@@ -108,49 +108,45 @@ export default function InvoiceRequestDetailPage({ params }: { params: Promise<{
 
     setUploading(true)
     try {
-      // Upload file to blob storage
+      // Calculate visibility dates
+      const visibilityStart = new Date()
+      const visibilityEnd = new Date()
+      visibilityEnd.setDate(visibilityEnd.getDate() + parseInt(availableDays))
+
+      // Upload directly to invoices API with FormData
       const formData = new FormData()
       formData.append("file", file)
+      formData.append("invoice_request_id", id)
+      formData.append("visibility_start", visibilityStart.toISOString())
+      formData.append("visibility_end", visibilityEnd.toISOString())
+      if (notes) {
+        formData.append("notes", notes)
+      }
 
-      const uploadResponse = await fetch("/api/upload", {
+      const invoiceResponse = await fetch("/api/invoices", {
         method: "POST",
         body: formData,
       })
 
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload file")
+      if (!invoiceResponse.ok) {
+        const errorData = await invoiceResponse.json()
+        throw new Error(errorData.error || "Failed to upload invoice")
       }
 
-      const { url } = await uploadResponse.json()
-
-      // Calculate availability date
-      const availableUntil = new Date()
-      availableUntil.setDate(availableUntil.getDate() + parseInt(availableDays))
-
-      // Create invoice record
-      const invoiceResponse = await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          request_id: id,
-          file_url: url,
-          file_name: file.name,
-          available_until: availableUntil.toISOString(),
-          notes,
-        }),
+      const newInvoice = await invoiceResponse.json()
+      setInvoice({
+        id: newInvoice.id,
+        file_url: newInvoice.file_url,
+        file_name: file.name,
+        available_until: visibilityEnd.toISOString(),
+        notes: notes || undefined,
+        uploaded_at: new Date().toISOString(),
       })
-
-      if (invoiceResponse.ok) {
-        const newInvoice = await invoiceResponse.json()
-        setInvoice(newInvoice)
-        setRequest((prev) => prev ? { ...prev, status: "uploaded" } : null)
-        toast.success("Invoice uploaded successfully")
-      } else {
-        throw new Error("Failed to create invoice record")
-      }
+      setRequest((prev) => prev ? { ...prev, status: "uploaded" } : null)
+      toast.success("Invoice uploaded successfully")
     } catch (error) {
       console.error("Upload error:", error)
-      toast.error("Failed to upload invoice")
+      toast.error(error instanceof Error ? error.message : "Failed to upload invoice")
     } finally {
       setUploading(false)
     }
@@ -171,7 +167,9 @@ export default function InvoiceRequestDetailPage({ params }: { params: Promise<{
   if (loading) {
     return (
       <SidebarProvider>
-        <TeamNav userRole={user?.role || ""} userName={user?.full_name || ""} />
+        <TeamNav user={user} onLogout={() => {
+              fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => router.push("/team/login"))
+            }} />
         <SidebarInset>
           <div className="flex items-center justify-center h-screen">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -184,7 +182,9 @@ export default function InvoiceRequestDetailPage({ params }: { params: Promise<{
   if (!request) {
     return (
       <SidebarProvider>
-        <TeamNav userRole={user?.role || ""} userName={user?.full_name || ""} />
+        <TeamNav user={user} onLogout={() => {
+              fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => router.push("/team/login"))
+            }} />
         <SidebarInset>
           <div className="flex items-center justify-center h-screen">
             <p>Request not found</p>
@@ -196,7 +196,9 @@ export default function InvoiceRequestDetailPage({ params }: { params: Promise<{
 
   return (
     <SidebarProvider>
-      <TeamNav userRole={user?.role || ""} userName={user?.full_name || ""} />
+      <TeamNav user={user} onLogout={() => {
+              fetch("/api/auth/logout", { method: "POST", credentials: "include" }).then(() => router.push("/team/login"))
+            }} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
@@ -281,13 +283,16 @@ export default function InvoiceRequestDetailPage({ params }: { params: Promise<{
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="file">Invoice File (PDF)</Label>
+                    <Label htmlFor="file">Invoice File (PDF, Word, Excel)</Label>
                     <Input
                       id="file"
                       type="file"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                       onChange={handleFileSelect}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Supported formats: PDF, DOC, DOCX, XLS, XLSX (max 10MB)
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="days">Available for (days)</Label>

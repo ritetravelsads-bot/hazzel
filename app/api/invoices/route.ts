@@ -115,6 +115,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // Validate file type - allow PDF, Word documents, Excel files
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.oasis.opendocument.text',
+      'application/vnd.oasis.opendocument.spreadsheet',
+    ]
+    
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json({ error: "Invalid file type. Allowed: PDF, DOC, DOCX, XLS, XLSX, ODT, ODS" }, { status: 400 })
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: "File too large. Maximum size is 10MB." }, { status: 400 })
+    }
+
     // Verify invoice request exists and is approved
     const invoiceRequest = await InvoiceRequest.findById(invoiceRequestId).populate("customer_id")
     if (!invoiceRequest) {
