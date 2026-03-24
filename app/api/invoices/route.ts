@@ -99,10 +99,10 @@ export async function POST(request: Request) {
 
     await connectDB()
 
-    // Verify user is accountant
+    // Verify user is accountant or account
     const user = await User.findById(session.userId)
-    if (!user || user.role !== ROLES.ACCOUNTANT) {
-      return NextResponse.json({ error: "Only accountants can upload invoices" }, { status: 403 })
+    if (!user || (user.role !== ROLES.ACCOUNTANT && user.role !== ROLES.ACCOUNT)) {
+      return NextResponse.json({ error: "Only accountants or account users can upload invoices" }, { status: 403 })
     }
 
     const formData = await request.formData()

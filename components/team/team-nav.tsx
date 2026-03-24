@@ -58,6 +58,7 @@ const catalogNavItems: NavItem[] = [
 
 const accountantNavItems: NavItem[] = [
   { title: "Invoice Requests", href: "/team/invoice-requests", icon: FileText, roles: ["accountant", "account", "super_admin", "admin"] },
+  { title: "Invoice History", href: "/team/invoice-history", icon: FileText, roles: ["accountant", "account", "super_admin", "admin"] },
 ]
 
 const adminNavItems: NavItem[] = [
